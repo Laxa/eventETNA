@@ -44,12 +44,15 @@ function main()
 function getNotesForUser($id, &$cookie)
 {
     $userPage = get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $cookie);
+    /* si je dois dev en offline */
     /* $userPage = file_get_contents('tmp'); */
     /* Treating the HTML page */
     $userPage = html_entity_decode($userPage);
     /* A changer le jour ou on a un vrai intranet... */
     $userPage = utf8_encode($userPage);
-    $array = explode('<th class="marks_uv" colspan="5">', $userPage);
+    /* $array = explode('<th class="marks_uv" colspan="5">', $userPage); */
+    $array = preg_split('#th class="marks_uv" colspan="[5-6]">#', $userPage);
+    var_dump($array);
     /* We throw away first elem, cause it's useless one */
     array_shift($array);
     $notes = array();
