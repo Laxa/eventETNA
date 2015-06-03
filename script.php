@@ -1,5 +1,26 @@
 <?php
 
+/* SCRIPT HERE */
+try
+{
+    if (!(file_exists('notes') && is_dir('notes')))
+        shell_exec('mkdir notes');
+
+    $cookie = trim(file_get_contents('cookie'));
+    getNotesForPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
+    /* master ED */
+    /* getNotesForPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie); */
+}
+catch (Exception $e)
+{
+    echo "Something unexpected happened!\n";
+    echo $e->getMessage()."\n";
+}
+/* getNotesForUser(42, $toto = 2); */
+/* ---END OF SCRIPT--- */
+
+
+
 function get($url, &$cookie)
 {
     $ch = curl_init();
@@ -29,10 +50,9 @@ function get($url, &$cookie)
     return $body;
 }
 
-function main()
+function getNotesByPromo($url, &$cookie)
 {
-    $cookie = trim(file_get_contents('cookie'));
-    $users = getUsers('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
+    $users = getUsers($url, $cookie);
     foreach ($users as $user => $id)
     {
         echo "Getting notes for $id:$user...";
@@ -44,15 +64,18 @@ function main()
 function getNotesForUser($id, &$cookie)
 {
     $userPage = get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $cookie);
-    /* si je dois dev en offline */
-    /* $userPage = file_get_contents('tmp'); */
+    /* for offline dev */
+    /* $userPage = file_get_contents('report.example'); */
     /* Treating the HTML page */
     $userPage = html_entity_decode($userPage);
-    /* A changer le jour ou on a un vrai intranet... */
     $userPage = utf8_encode($userPage);
     /* $array = explode('<th class="marks_uv" colspan="5">', $userPage); */
     $array = preg_split('#th class="marks_uv" colspan="[5-6]">#', $userPage);
-    var_dump($array);
+    if (!sizeof($array))
+    {
+        echo "Error while preg_splitting the report page\n";
+        exit(-1);
+    }
     /* We throw away first elem, cause it's useless one */
     array_shift($array);
     $notes = array();
@@ -70,10 +93,11 @@ function getNotesForUv($uv)
     $notes = array();
     preg_match_all('#<tr[^>]*>(.*?)</tr#s', $uv, $matches);
     $tmp = $matches[1];
-    for ($i = 0; $i < sizeof($tmp); $i++)
+    $size = sizeof($tmp);
+    for ($i = 0; $i < $size; $i++)
     {
         preg_match_all('#<td[^>]*>(.*?)</td#s', $tmp[$i], $noteRow);
-        /* Ne devrait jamais lever d'exception, mais on ne sait jamais avec EUTEUNA */
+        /* should never happen, but you never know with euteuna... */
         try
         {
             $notes[$i]["date"] = trim(strip_tags($noteRow[1][0]));
@@ -118,6 +142,3 @@ function getUsers($url, &$cookie)
         $users[$tmp[$i]] = $matches[1][$i + 1];
     return $users;
 }
-
-main();
-/* getNotesForUser(42, $toto = 2); */
