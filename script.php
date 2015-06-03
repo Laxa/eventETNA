@@ -117,7 +117,7 @@ function getNotesForUv($uv)
             if ($note[0] == '/')
                 $notes[$i]['note'] = 'NYD';
             else
-                $notes[$i]['note'] = (int)trim(strip_tags($noteRow[1][2]));
+                $notes[$i]['note'] = (float)trim(strip_tags($noteRow[1][2]));
             $notes[$i]['moyenne'] = trim(strip_tags($noteRow[1][3]));
             $notes[$i]['commentaire'] = trim(strip_tags($noteRow[1][4]));
             if (preg_match("#ref='([^']*)#", $noteRow[1][4], $link))
@@ -127,7 +127,7 @@ function getNotesForUv($uv)
         {
             echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n";
             echo $e->getLine().':'.$e->getMessage()."\n";
-            return;
+            return false;
         }
     }
     return $notes;
