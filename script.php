@@ -20,7 +20,7 @@ try
         shell_exec('mkdir notes');
 
     $cookie = trim(file_get_contents('cookie'));
-    /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie); */
+    getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
     /* master ED */
     getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
 }
