@@ -50,7 +50,7 @@ function get($url, &$cookie)
 
     if ($httpCode / 100 != 2)
     {
-        echo "Getting $url returned a $httpCode, exiting.\n";
+        echo "Getting $url returned a $httpCode, exiting\n";
         exit(-1);
     }
     if (preg_match('#PHPSESSID=([^;]+)#', $header, $matches))
@@ -111,25 +111,23 @@ function getNotesForUv($uv)
         /* should never happen, but you never know with euteuna... */
         try
         {
-            $notes[$i]["date"] = trim(strip_tags($noteRow[1][0]));
-            $notes[$i]["intitule"] = trim(strip_tags($noteRow[1][1]));
-            if ($noteRow[1][2][0] == '/')
-                $notes[$i]["note"] = "NYD";
+            $notes[$i]['date'] = trim(strip_tags($noteRow[1][0]));
+            $notes[$i]['intitule'] = trim(strip_tags($noteRow[1][1]));
+            $note = trim($noteRow[1][2]);
+            if ($note[0] == '/')
+                $notes[$i]['note'] = 'NYD';
             else
-                $notes[$i]["note"] = (int)trim(strip_tags($noteRow[1][2]));
-            $notes[$i]["moyenne"] = trim(strip_tags($noteRow[1][3]));
-            $notes[$i]["commentaire"] = trim(strip_tags($noteRow[1][4]));
+                $notes[$i]['note'] = (int)trim(strip_tags($noteRow[1][2]));
+            $notes[$i]['moyenne'] = trim(strip_tags($noteRow[1][3]));
+            $notes[$i]['commentaire'] = trim(strip_tags($noteRow[1][4]));
             if (preg_match("#ref='([^']*)#", $noteRow[1][4], $link))
-                $notes[$i]["link"] = 'https://intra.etna-alternance.net'.$link[1];
+                $notes[$i]['link'] = 'https://intra.etna-alternance.net'.$link[1];
         }
         catch (Exception $e)
         {
-            var_dump($noteRow);
-            var_dump($link);
-            exit(-1);
-            /* echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n"; */
-            /* echo $e->getLine().':'.$e->getMessage()."\n"; */
-            /* return; */
+            echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n";
+            echo $e->getLine().':'.$e->getMessage()."\n";
+            return;
         }
     }
     return $notes;
