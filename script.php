@@ -1,5 +1,18 @@
 <?php
 
+/* CUSTOM ERROR HANDLING */
+set_error_handler('exceptions_error_handler');
+
+function exceptions_error_handler($severity, $message, $filename, $lineno) {
+    if (error_reporting() == 0) {
+        return;
+    }
+    if (error_reporting() & $severity) {
+        throw new ErrorException($message, 0, $severity, $filename, $lineno);
+    }
+}
+/* !CUSTOM_ERROR_HANDLING */
+
 /* SCRIPT HERE */
 try
 {
@@ -7,19 +20,17 @@ try
         shell_exec('mkdir notes');
 
     $cookie = trim(file_get_contents('cookie'));
-    getNotesForPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
+    /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie); */
     /* master ED */
-    /* getNotesForPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie); */
+    getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
 }
 catch (Exception $e)
 {
     echo "Something unexpected happened!\n";
-    echo $e->getMessage()."\n";
+    echo $e->getLine().':'.$e->getMessage()."\n";
 }
 /* getNotesForUser(42, $toto = 2); */
 /* ---END OF SCRIPT--- */
-
-
 
 function get($url, &$cookie)
 {
@@ -108,13 +119,17 @@ function getNotesForUv($uv)
                 $notes[$i]["note"] = (int)trim(strip_tags($noteRow[1][2]));
             $notes[$i]["moyenne"] = trim(strip_tags($noteRow[1][3]));
             $notes[$i]["commentaire"] = trim(strip_tags($noteRow[1][4]));
-            preg_match("#ref='([^']*)#", $noteRow[1][4], $link);
-            $notes[$i]["link"] = 'https://intra.etna-alternance.net'.$link[1];
+            if (preg_match("#ref='([^']*)#", $noteRow[1][4], $link))
+                $notes[$i]["link"] = 'https://intra.etna-alternance.net'.$link[1];
         }
         catch (Exception $e)
         {
-            echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n";
-            echo $e->getMessage()."\n";
+            var_dump($noteRow);
+            var_dump($link);
+            exit(-1);
+            /* echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n"; */
+            /* echo $e->getLine().':'.$e->getMessage()."\n"; */
+            /* return; */
         }
     }
     return $notes;
