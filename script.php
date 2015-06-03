@@ -21,8 +21,8 @@ try
 
     $cookie = trim(file_get_contents('cookie'));
     getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
-    /* master ED */
     getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
+    file_put_contents('cookie', $cookie);
 }
 catch (Exception $e)
 {
@@ -48,7 +48,7 @@ function get($url, &$cookie)
     $header = substr($response, 0, $header_size);
     $body = substr($response, $header_size);
 
-    if ($httpCode / 100 != 2)
+    if ((int)($httpCode / 100) != 2)
     {
         echo "Getting $url returned a $httpCode, exiting\n";
         exit(-1);
