@@ -40,15 +40,13 @@ try
     }
     else
     {
-        /* $current = getNotesForUser($refUserId, $cookie); */
+        /* $current = Etna::getNotesForUser($refUserId, $cookie); */
         $current = json_decode(file_get_contents('toto'), true);
         $old = json_decode(file_get_contents('notes/'.$refUserId), true);
         /* If there is a diff, we need to udpdate our datas to be accurate */
         if (($msg = Etna::diff($current, $old)) != false)
         {
-            echo $msg;
-            exit(-1);
-            /* do something with $msg here */
+            Etna::slack($msg, 'test');
             Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
             /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie); */
         }

@@ -64,12 +64,12 @@ class Etna
 
     public static function getNotesByPromo($url, &$cookie, $verbose = false)
     {
-        $users = getUsers($url, $cookie);
+        $users = self::getUsers($url, $cookie);
         foreach ($users as $user => $id)
         {
             if ($verbose)
                 echo "Getting notes for $id:$user...";
-            getNotesForUser($id, $cookie);
+            self::getNotesForUser($id, $cookie);
             if ($verbose)
                 echo "Done!\n";
         }
@@ -77,7 +77,7 @@ class Etna
 
     public static function getNotesForUser($id, &$cookie, $save = true)
     {
-        $userPage = get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $cookie);
+        $userPage = self::get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $cookie);
         /* for offline dev */
         /* $userPage = file_get_contents('report.example'); */
         /* Treating the HTML page */
@@ -96,7 +96,7 @@ class Etna
         while ($uv = array_shift($array))
         {
             preg_match('#([^<]+)#', $uv, $match);
-            $notes[trim($match[1])] = getNotesForUv($uv);
+            $notes[trim($match[1])] = self::getNotesForUv($uv);
         }
         if ($save)
             file_put_contents('notes/'.$id, json_encode($notes));
@@ -140,7 +140,7 @@ class Etna
     public static function getUsers($url, &$cookie)
     {
         $matches = array();
-        $etna2017 = get($url, $cookie);
+        $etna2017 = self::get($url, $cookie);
         /* Pattern to get login from promotion page */
         if (preg_match_all('#photo-name\">([^<]+)#', $etna2017, $matches) == 0 || !sizeof($matches[1]))
         {
@@ -158,5 +158,41 @@ class Etna
         for ($i = 0; $i < sizeof($tmp); $i++)
             $users[$tmp[$i]] = $matches[1][$i + 1];
         return $users;
+    }
+
+    // custom code from : https://gist.github.com/alexstone/9319715
+    // custom code from : https://gist.github.com/pugwonk/fe1c7f849fd9e8049758
+    // (string) $message - message to be passed to Slack
+    // (string) $room - room in which to write the message, too
+    // (string) $icon - You can set up custom emoji icons to use with each message
+    public static function slack($message, $room = "etna")
+    {
+        /* This is to be sure we avoid transmitting twice the same message */
+        if (file_exists('lastMessage'))
+        {
+            $check = file_get_contents('lastMessage');
+            if ($check === $message) return;
+        }
+        $data = "payload=" . json_encode(array(
+                                             "channel"       =>  "#{$room}",
+                                             "text"          =>  $message,
+                                             ));
+
+        // You can get your webhook endpoint from your Slack settings
+        $ch = curl_init('https://hooks.slack.com/services/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');
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+
+        if ($result != 'ok')
+            throw new Exception("Failed to sent message to slack `$result`");
+
+        curl_close($ch);
+
+        // Laravel-specific log writing method
+        file_put_contents('lastMessage', $message);
+
+        return $result;
     }
 }
