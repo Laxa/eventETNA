@@ -40,8 +40,7 @@ try
     }
     else
     {
-        /* $current = Etna::getNotesForUser($refUserId, $cookie); */
-        $current = json_decode(file_get_contents('toto'), true);
+        $current = Etna::getNotesForUser($refUserId, $cookie);
         $old = json_decode(file_get_contents('notes/'.$refUserId), true);
         /* If there is a diff, we need to udpdate our datas to be accurate */
         if (($msg = Etna::diff($current, $old)) != false)
