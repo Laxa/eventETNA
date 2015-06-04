@@ -179,7 +179,7 @@ class Etna
                                              ));
 
         // You can get your webhook endpoint from your Slack settings
-        $ch = curl_init('https://hooks.slack.com/services/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');
+        $ch = curl_init('https://hooks.slack.com/services/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');
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -190,7 +190,6 @@ class Etna
 
         curl_close($ch);
 
-        // Laravel-specific log writing method
         file_put_contents('lastMessage', $message);
 
         return $result;
