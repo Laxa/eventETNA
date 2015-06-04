@@ -16,21 +16,78 @@ function exceptions_error_handler($severity, $message, $filename, $lineno) {
 /* SCRIPT HERE */
 try
 {
+    /* THIS SCRIPT IS SUPPOSED TO BE RUNNING WITH CRONTAB WE NEED TO CHANGE CWD */
+    chdir(__DIR__);
+    /* !THIS SCRIPT IS SUPPOSED TO BE RUNNING WITH CRONTAB WE NEED TO CHANGE CW */
+
+    /* SCRIPT SETTINGS */
+    $cookie = trim(file_get_contents('cookie'));
+    /* Reference User ID : script will check on this user notes if anything has changed */
+    /* you should check only promotion with same notes as this user or things are going to be wrong */
+    $refUserId = 6384;
+    /* !SCRIPT SETTINGS */
+
     if (!(file_exists('notes') && is_dir('notes')))
         shell_exec('mkdir notes');
 
-    $cookie = trim(file_get_contents('cookie'));
-    getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
-    getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
+    if (!file_exists('notes/'.$refUserId))
+    {
+        echo "Looks like it's the first time that the script is running, fetching all notes from promotions\n";
+        getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie, true);
+        /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie, true); */
+    }
+    else
+    {
+        /* $current = getNotesForUser($refUserId, $cookie); */
+        $current = json_decode(file_get_contents('toto'), true);
+        $old = json_decode(file_get_contents('notes/'.$refUserId), true);
+        /* If there is a diff, we need to udpdate our datas to be accurate */
+        if (($msg = diff($current, $old)) != false)
+        {
+            echo $msg;
+            exit(-1);
+            /* do something with $msg here */
+            getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
+            /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie); */
+        }
+        /* TODO : remove that */
+        else
+            echo "No diff found\n";
+        /* !TODO */
+    }
+
     file_put_contents('cookie', $cookie);
 }
 catch (Exception $e)
 {
     echo "Something unexpected happened!\n";
-    echo $e->getLine().':'.$e->getMessage()."\n";
+    echo 'In file '.$e->getFile().' line '.$e->getLine().' : '.$e->getMessage()."\n";
 }
 /* getNotesForUser(42, $toto = 2); */
 /* ---END OF SCRIPT--- */
+
+function diff($current, $old)
+{
+    $msg = '';
+
+    foreach ($current as $key => $value)
+    {
+        if (!isset($old[$key]))
+        {
+            $msg .= sprintf("Nouveau module detecte : %s\n", $key);
+            foreach ($value as $k => $v)
+            {
+                if (isset($v['intitule']))
+                    $msg .= sprintf("Nouveau intitule detecte : %s\n", $v['intitule']);
+                if (isset($v['note']) && $v['note'] != 'NYD')
+                    $msg .= sprintf("Nouvelle note disponible pour : %s\n", $v['intitule']);
+            }
+        }
+    }
+    if (empty($msg))
+        return false;
+    return $msg;
+}
 
 function get($url, &$cookie)
 {
@@ -61,14 +118,16 @@ function get($url, &$cookie)
     return $body;
 }
 
-function getNotesByPromo($url, &$cookie)
+function getNotesByPromo($url, &$cookie, $verbose = false)
 {
     $users = getUsers($url, $cookie);
     foreach ($users as $user => $id)
     {
-        echo "Getting notes for $id:$user...";
+        if ($verbose)
+            echo "Getting notes for $id:$user...";
         getNotesForUser($id, $cookie);
-        echo "Done!\n";
+        if ($verbose)
+            echo "Done!\n";
     }
 }
 
@@ -126,7 +185,7 @@ function getNotesForUv($uv)
         catch (Exception $e)
         {
             echo "L'intranet est en carton, rien de nouveau jusqu'ici...\n";
-            echo $e->getLine().':'.$e->getMessage()."\n";
+            echo 'In file '.$e->getFile().' line '.$e->getLine().' : '.$e->getMessage()."\n";
             return false;
         }
     }
