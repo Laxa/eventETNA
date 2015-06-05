@@ -46,7 +46,6 @@ try
         /* If there is a diff, we need to udpdate our datas to be accurate */
         if (($array = Etna::diff($current, $old)) != false)
         {
-            Etna::slack($array['msg']);
             Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
             Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
             /* Get all notes for the diff */

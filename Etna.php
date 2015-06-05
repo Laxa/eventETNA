@@ -4,11 +4,11 @@ class Etna
 {
     public static function diff($current, $old)
     {
-        $array = array('note' => NULL, 'msg' => NULL);
-        $msg = '';
+        $array = array();
 
         foreach ($current as $key => $value)
         {
+            $msg = '';
             if (!isset($old[$key]))
             {
                 $msg .= sprintf("Nouveau module detecte `%s`\n", $key);
@@ -19,7 +19,7 @@ class Etna
                     if (isset($v['note']) && $v['note'] != 'NYD')
                     {
                         $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
-                        $array['note'][] = array('UV' => $key, 'intitule' => $v['intitule']);
+                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg);
                     }
                 }
             }
@@ -30,13 +30,12 @@ class Etna
                     if ($old[$key][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
                     {
                         $msg .= sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
-                        $array['note'][] = array('UV' => $key, 'intitule' => $v['intitule']);
+                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg);
                     }
                 }
             }
         }
-        $array['msg'] = $msg;
-        if (empty($msg))
+        if (!sizeof($array))
             return false;
         return $array;
     }
@@ -171,12 +170,11 @@ class Etna
 
     public static function getSpecificNotesForUsers($users, $array)
     {
-        $msg = '';
-
-        foreach ($array['note'] as $value)
+        foreach ($array as $value)
         {
             $count = 0;
             $notes = array();
+            $msg = $value['msg'];
             foreach ($users as $user => $id)
             {
                 /* Should never happen */
