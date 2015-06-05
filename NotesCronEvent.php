@@ -36,18 +36,24 @@ try
     {
         echo "Looks like it's the first time that the script is running, fetching all notes from promotions\n";
         Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie, true);
-        /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie, true); */
+        Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie, true);
     }
     else
     {
+        /* $current = json_decode(file_get_contents('toto'), true); */
         $current = Etna::getNotesForUser($refUserId, $cookie, false);
         $old = json_decode(file_get_contents('notes/'.$refUserId), true);
         /* If there is a diff, we need to udpdate our datas to be accurate */
-        if (($msg = Etna::diff($current, $old)) != false)
+        if (($array = Etna::diff($current, $old)) != false)
         {
-            Etna::slack($msg);
+            Etna::slack($array['msg']);
             Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
-            /* getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie); */
+            Etna::getNotesByPromo('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie);
+            /* Get all notes for the diff */
+            $users = Etna::getUsers('https://intra.etna-alternance.net/report/trombi/list/term/Master%20-%20Mars/year/2017', $cookie);
+            $users = array_merge(Etna::getUsers('https://intra.etna-alternance.net/report/trombi/list/term/Master%20ED%20-%20Mars/year/2017', $cookie), $users);
+            $msg = Etna::getSpecificNotesForUsers($users, $array);
+            Etna::slack($msg);
         }
     }
 

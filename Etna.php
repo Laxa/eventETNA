@@ -4,6 +4,7 @@ class Etna
 {
     public static function diff($current, $old)
     {
+        $array = array('note' => NULL, 'msg' => NULL);
         $msg = '';
 
         foreach ($current as $key => $value)
@@ -16,7 +17,10 @@ class Etna
                     if (isset($v['intitule']))
                         $msg .= sprintf("Nouveau intitule detecte `%s`\n", $v['intitule']);
                     if (isset($v['note']) && $v['note'] != 'NYD')
+                    {
                         $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
+                        $array['note'][] = array('UV' => $key, 'intitule' => $v['intitule']);
+                    }
                 }
             }
             else
@@ -24,13 +28,17 @@ class Etna
                 foreach ($value as $k => $v)
                 {
                     if ($old[$key][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
+                    {
                         $msg .= sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
+                        $array['note'][] = array('UV' => $key, 'intitule' => $v['intitule']);
+                    }
                 }
             }
         }
+        $array['msg'] = $msg;
         if (empty($msg))
             return false;
-        return $msg;
+        return $array;
     }
 
     public static function get($url, &$cookie)
@@ -161,14 +169,63 @@ class Etna
         return $users;
     }
 
+    public static function getSpecificNotesForUsers($users, $array)
+    {
+        $msg = '';
+
+        foreach ($array['note'] as $value)
+        {
+            $count = 0;
+            $notes = array();
+            foreach ($users as $user => $id)
+            {
+                /* Should never happen */
+                if (!file_exists('notes/'.$id))
+                {
+                    $msg .= "Fichier de notes manquant pour $user\n";
+                    continue;
+                }
+                $json = json_decode(file_get_contents('notes/'.$id), true);
+                if (isset($json[$value['UV']]))
+                {
+                    foreach ($json[$value['UV']] as $uv)
+                    {
+                        if ($uv['intitule'] === $value['intitule'])
+                        {
+                            $note = $uv['note'];
+                            $msg .= "$user a obtenu la note de ".$note."\n";
+                            if ($note != 'NYD' && $note >= 0)
+                            {
+                                $count++;
+                                $notes[] = $note;
+                            }
+                        }
+                    }
+                }
+                else
+                    $msg .= "$user n'a pas de note sur cet intitule/UV\n";
+            }
+            if (sizeof($notes))
+            {
+                $total = 0;
+                $size = sizeof($notes);
+                for ($i = 0; $i < $size; $i++)
+                    $total += $notes[$i];
+                $average = number_format($total / $count, 2);
+                $msg .= "La moyenne est de $average\n";
+            }
+        }
+        return $msg;
+    }
+
     // custom code from : https://gist.github.com/alexstone/9319715
-    // custom code from : https://gist.github.com/pugwonk/fe1c7f849fd9e8049758
     // (string) $message - message to be passed to Slack
     // (string) $room - room in which to write the message, too
     // (string) $icon - You can set up custom emoji icons to use with each message
     public static function slack($message, $room = "etna")
     {
         /* This is to be sure we avoid transmitting twice the same message */
+        if (empty($message) || !strlen($message)) return;
         if (file_exists('lastMessage'))
         {
             $check = file_get_contents('lastMessage');
