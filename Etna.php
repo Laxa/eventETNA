@@ -111,7 +111,8 @@ class Etna
         $size = sizeof($tmp);
         for ($i = 0; $i < $size; $i++)
         {
-            preg_match_all('#<td[^>]*>(.*?)</td#s', $tmp[$i], $noteRow);
+            if (!preg_match_all('#<td[^>]*>(.*?)</td#s', $tmp[$i], $noteRow))
+                continue;
             /* should never happen, but you never know with euteuna... */
             try
             {
