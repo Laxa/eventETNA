@@ -17,10 +17,8 @@ class Etna
                     if (isset($v['intitule']))
                         $msg .= sprintf("Nouveau intitule detecte `%s`\n", $v['intitule']);
                     if (isset($v['note']) && $v['note'] != 'NYD')
-                    {
                         $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
-                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg);
-                    }
+                    $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                 }
             }
             else
@@ -30,7 +28,7 @@ class Etna
                     if ($old[$key][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
                     {
                         $msg .= sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
-                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg);
+                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                     }
                 }
             }
@@ -170,47 +168,51 @@ class Etna
 
     public static function getSpecificNotesForUsers($users, $array)
     {
+        $msg = '';
         foreach ($array as $value)
         {
             $count = 0;
             $notes = array();
-            $msg = $value['msg'];
-            foreach ($users as $user => $id)
+            $msg .= $value['msg'];
+            if (is_numeric($value['note']))
             {
-                /* Should never happen */
-                if (!file_exists('notes/'.$id))
+                foreach ($users as $user => $id)
                 {
-                    $msg .= "Fichier de notes manquant pour $user\n";
-                    continue;
-                }
-                $json = json_decode(file_get_contents('notes/'.$id), true);
-                if (isset($json[$value['UV']]))
-                {
-                    foreach ($json[$value['UV']] as $uv)
+                    /* Should never happen */
+                    if (!file_exists('notes/'.$id))
                     {
-                        if ($uv['intitule'] === $value['intitule'])
+                        $msg .= "Fichier de notes manquant pour $user\n";
+                        continue;
+                    }
+                    $json = json_decode(file_get_contents('notes/'.$id), true);
+                    if (isset($json[$value['UV']]))
+                    {
+                        foreach ($json[$value['UV']] as $uv)
                         {
-                            $note = $uv['note'];
-                            $msg .= "$user a obtenu la note de ".$note."\n";
-                            if ($note != 'NYD' && $note >= 0)
+                            if ($uv['intitule'] === $value['intitule'])
                             {
-                                $count++;
-                                $notes[] = $note;
+                                $note = $uv['note'];
+                                $msg .= "$user a obtenu la note de ".$note."\n";
+                                if ($note != 'NYD' && $note >= 0)
+                                {
+                                    $count++;
+                                    $notes[] = $note;
+                                }
                             }
                         }
                     }
+                    else
+                        $msg .= "$user n'a pas de note sur cet intitule/UV\n";
                 }
-                else
-                    $msg .= "$user n'a pas de note sur cet intitule/UV\n";
-            }
-            if (sizeof($notes))
-            {
-                $total = 0;
-                $size = sizeof($notes);
-                for ($i = 0; $i < $size; $i++)
-                    $total += $notes[$i];
-                $average = number_format($total / $count, 2);
-                $msg .= "La moyenne est de $average\n";
+                if (sizeof($notes))
+                {
+                    $total = 0;
+                    $size = sizeof($notes);
+                    for ($i = 0; $i < $size; $i++)
+                        $total += $notes[$i];
+                    $average = number_format($total / $count, 2);
+                    $msg .= "La moyenne est de $average\n";
+                }
             }
         }
         return $msg;
