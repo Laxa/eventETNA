@@ -1,0 +1,9 @@
+{
+    "refUser":007,
+    "cookie":"cookie here",
+    "promo":["promo 1 URL from trombi",
+        "promo 2 URL from trombi"
+    ],
+    "slackHook":"slack hook URL",
+    "lastMessage":"this will be used by the script"
+}

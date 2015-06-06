@@ -2,6 +2,28 @@
 
 class Etna
 {
+    public static function getConfigFile($filename)
+    {
+        $content = file_get_contents($filename);
+        if (!$content)
+            throw new Exception("Failed to open $filename");
+        $config = json_decode($content, true);
+        if ($config === NULL)
+            throw new Exception("Looks like $filename isn't in JSON format");
+        return $config;
+    }
+
+    public static function setConfigFile($filename, $config)
+    {
+        file_put_contents($filename, json_encode($config));
+    }
+
+    public static function updateNotes(&$config, $verbose = false)
+    {
+        foreach ($config['promo'] as $promo)
+            self::getNotesByPromo($promo, $config, $verbose);
+    }
+
     public static function diff($current, $old)
     {
         $array = array();
@@ -38,14 +60,14 @@ class Etna
         return $array;
     }
 
-    public static function get($url, &$cookie)
+    public static function get($url, &$config)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+        curl_setopt($ch, CURLOPT_COOKIE, $config['cookie']);
 
         $response = curl_exec($ch);
 
@@ -60,29 +82,29 @@ class Etna
             exit(-1);
         }
         if (preg_match('#PHPSESSID=([^;]+)#', $header, $matches))
-            $cookie = $matches[1];
+            $config['cookie'] = $matches[1];
 
         curl_close($ch);
 
         return $body;
     }
 
-    public static function getNotesByPromo($url, &$cookie, $verbose = false)
+    public static function getNotesByPromo($url, &$config, $verbose = false)
     {
-        $users = self::getUsers($url, $cookie);
+        $users = self::getUsers($url, $config);
         foreach ($users as $user => $id)
         {
             if ($verbose)
                 echo "Getting notes for $id:$user...";
-            self::getNotesForUser($id, $cookie);
+            self::getNotesForUser($id, $config);
             if ($verbose)
                 echo "Done!\n";
         }
     }
 
-    public static function getNotesForUser($id, &$cookie, $save = true)
+    public static function getNotesForUser($id, &$config, $save = true)
     {
-        $userPage = self::get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $cookie);
+        $userPage = self::get('https://intra.etna-alternance.net/report/index/summary/id/'.$id, $config);
         /* for offline dev */
         /* $userPage = file_get_contents('report.example'); */
         /* Treating the HTML page */
@@ -143,10 +165,18 @@ class Etna
         return $notes;
     }
 
-    public static function getUsers($url, &$cookie)
+    public static function getUsersListForPromos(&$config)
+    {
+        $result = array();
+        foreach ($config['promo'] as $promo)
+            $result = array_merge(getUsers($promo, $config), $result);
+        return $result;
+    }
+
+    public static function getUsers($url, &$config)
     {
         $matches = array();
-        $etna2017 = self::get($url, $cookie);
+        $etna2017 = self::get($url, $config);
         /* Pattern to get login from promotion page */
         if (preg_match_all('#photo-name\">([^<]+)#', $etna2017, $matches) == 0 || !sizeof($matches[1]))
         {
@@ -222,22 +252,18 @@ class Etna
     // (string) $message - message to be passed to Slack
     // (string) $room - room in which to write the message, too
     // (string) $icon - You can set up custom emoji icons to use with each message
-    public static function slack($message, $room = "etna")
+    public static function slack($message, $room = "etna", &$config)
     {
         /* This is to be sure we avoid transmitting twice the same message */
         if (empty($message) || !strlen($message)) return;
-        if (file_exists('lastMessage'))
-        {
-            $check = file_get_contents('lastMessage');
-            if ($check === $message) return;
-        }
+        if ($config['lastMessage'] === $message) return;
         $data = "payload=" . json_encode(array(
                                              "channel"       =>  "#{$room}",
                                              "text"          =>  $message,
                                              ));
 
         // You can get your webhook endpoint from your Slack settings
-        $ch = curl_init('https://hooks.slack.com/services/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');
+        $ch = curl_init($config['slackHook']);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -247,8 +273,6 @@ class Etna
             throw new Exception("Failed to sent message to slack `$result`");
 
         curl_close($ch);
-
-        file_put_contents('lastMessage', $message);
 
         return $result;
     }
