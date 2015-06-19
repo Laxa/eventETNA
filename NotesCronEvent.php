@@ -24,6 +24,7 @@ try
 
     /* SCRIPT SETTINGS */
     $config = Etna::getConfigFile('config');
+    $debug = isset($config['env']) && $config['env'] === 'debug';
     /* !SCRIPT SETTINGS */
 
     if (!(file_exists('notes') && is_dir('notes')))
@@ -36,17 +37,31 @@ try
     }
     else
     {
-        /* $current = json_decode(file_get_contents('toto'), true); */
-        $current = Etna::getNotesForUser($config['refUser'], $config, false);
-        $old = json_decode(file_get_contents('notes/'.$config['refUser']), true);
+        if ($debug)
+        {
+            $old = json_decode(file_get_contents('toto'), true);
+            $current = json_decode(file_get_contents('notes/'.$config['refUser']), true);
+        }
+        else
+        {
+            $current = Etna::getNotesForUser($config['refUser'], $config, false);
+            $old = json_decode(file_get_contents('notes/'.$config['refUser']), true);
+        }
         /* If there is a diff, we need to udpdate our datas to be accurate */
         if (($array = Etna::diff($current, $old)) != false)
         {
-            Etna::updateNotes($config);
-            /* Get all notes for the diff */
-            $users = Etna::getUsersListForPromos($config);
+            if (!$debug)
+            {
+                Etna::updateNotes($config);
+                /* Get all notes for the diff */
+                $users = Etna::getUsersListForPromos($config);
+            }
+            else
+                $users = array('debug' => $config['refUser']);
             $msg = Etna::getSpecificNotesForUsers($users, $array);
-            Etna::slack($msg, $config);
+            if (!$debug)
+                Etna::slack($msg, $config);
+            echo $msg;
         }
     }
 

@@ -199,11 +199,14 @@ class Etna
     public static function getSpecificNotesForUsers($users, $array)
     {
         $msg = '';
+
+        /* array is the differences we need to fetch data for */
         foreach ($array as $value)
         {
             $count = 0;
             $notes = array();
             $msg .= $value['msg'];
+            /* if we have a note to fetch for this module */
             if (is_numeric($value['note']))
             {
                 foreach ($users as $user => $id)
@@ -271,6 +274,9 @@ class Etna
 
         if ($result != 'ok')
             throw new Exception("Failed to sent message to slack `$result`");
+
+        /* message should never be the same, in case of 'error' we don't send last message */
+        $config['lastMessage'] = $message;
 
         curl_close($ch);
 

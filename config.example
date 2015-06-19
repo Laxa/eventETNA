@@ -5,5 +5,6 @@
         "promo 2 URL from trombi"
     ],
     "slackHook":"slack hook URL",
-    "lastMessage":"this will be used by the script"
+    "lastMessage":"this will be used by the script",
+    "env":"debug for debug or empty if production env"
 }
