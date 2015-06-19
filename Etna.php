@@ -214,7 +214,7 @@ class Etna
                     /* Should never happen */
                     if (!file_exists('notes/'.$id))
                     {
-                        $msg .= "Fichier de notes manquant pour $user\n";
+                        $msg .= sprintf("%-8s => `Fichier manquant`\n", $user);
                         continue;
                     }
                     $json = json_decode(file_get_contents('notes/'.$id), true);
@@ -234,7 +234,7 @@ class Etna
                         }
                     }
                     else
-                        $msg .= "$user n'a pas de note sur cet intitule/UV\n";
+                        $msg .= sprintf("%-8s => `No note`\n", $user);
                 }
                 if (sizeof($notes))
                 {
@@ -244,10 +244,10 @@ class Etna
                     foreach ($notes as $user => $note)
                     {
                         $total += $note;
-                        $msg .= "$user a obtenu la note de $note\n";
+                        $msg .= sprintf("%-8s => `%d`\n", $user, $note);
                     }
                     $average = number_format($total / $count, 2);
-                    $msg .= "La moyenne est de $average\n";
+                    $msg .= "Average  => `$average`\n";
                 }
             }
         }
