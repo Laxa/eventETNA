@@ -112,13 +112,13 @@ class Etna
         $userPage = utf8_encode($userPage);
         /* $array = explode('<th class="marks_uv" colspan="5">', $userPage); */
         $array = preg_split('#th class="marks_uv" colspan="[5-6]">#', $userPage);
-        if (!sizeof($array))
+        /* We throw away first elem, cause it's useless one */
+        array_shift($array);
+        if (sizeof($array) == 0)
         {
             echo "Error while preg_splitting the report page\n";
             exit(-1);
         }
-        /* We throw away first elem, cause it's useless one */
-        array_shift($array);
         $notes = array();
         while ($uv = array_shift($array))
         {
@@ -225,11 +225,10 @@ class Etna
                             if ($uv['intitule'] === $value['intitule'])
                             {
                                 $note = $uv['note'];
-                                $msg .= "$user a obtenu la note de ".$note."\n";
                                 if ($note != 'NYD' && $note >= 0)
                                 {
                                     $count++;
-                                    $notes[] = $note;
+                                    $notes[$user] = $note;
                                 }
                             }
                         }
@@ -239,10 +238,14 @@ class Etna
                 }
                 if (sizeof($notes))
                 {
+                    arsort($notes);
                     $total = 0;
                     $size = sizeof($notes);
-                    for ($i = 0; $i < $size; $i++)
-                        $total += $notes[$i];
+                    foreach ($notes as $user => $note)
+                    {
+                        $total += $note;
+                        $msg .= "$user a obtenu la note de $note\n";
+                    }
                     $average = number_format($total / $count, 2);
                     $msg .= "La moyenne est de $average\n";
                 }
