@@ -255,7 +255,7 @@ class Etna
     // (string) $message - message to be passed to Slack
     // (string) $room - room in which to write the message, too
     // (string) $icon - You can set up custom emoji icons to use with each message
-    public static function slack($message, &$config, $room = "etna")
+    public static function slack($message, &$config, $room = "etna-notes")
     {
         /* This is to be sure we avoid transmitting twice the same message */
         if (empty($message) || !strlen($message)) return;
