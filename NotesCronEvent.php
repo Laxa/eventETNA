@@ -46,7 +46,7 @@ try
             /* Get all notes for the diff */
             $users = Etna::getUsersListForPromos($config);
             $msg = Etna::getSpecificNotesForUsers($users, $array);
-            Etna::slack($msg);
+            Etna::slack($msg, $config);
         }
     }
 

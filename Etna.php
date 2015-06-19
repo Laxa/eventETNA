@@ -169,7 +169,7 @@ class Etna
     {
         $result = array();
         foreach ($config['promo'] as $promo)
-            $result = array_merge(getUsers($promo, $config), $result);
+            $result = array_merge(self::getUsers($promo, $config), $result);
         return $result;
     }
 
@@ -252,7 +252,7 @@ class Etna
     // (string) $message - message to be passed to Slack
     // (string) $room - room in which to write the message, too
     // (string) $icon - You can set up custom emoji icons to use with each message
-    public static function slack($message, $room = "etna", &$config)
+    public static function slack($message, &$config, $room = "etna")
     {
         /* This is to be sure we avoid transmitting twice the same message */
         if (empty($message) || !strlen($message)) return;
