@@ -220,6 +220,7 @@ class Etna
                     $json = json_decode(file_get_contents('notes/'.$id), true);
                     if (isset($json[$value['UV']]))
                     {
+                        /* try to check : isset($json[$value['UV']][$value['intitule']]) */
                         foreach ($json[$value['UV']] as $uv)
                         {
                             if ($uv['intitule'] === $value['intitule'])
