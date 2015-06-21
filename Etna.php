@@ -114,6 +114,7 @@ class Etna
         $array = preg_split('#th class="marks_uv" colspan="[5-6]">#', $userPage);
         /* We throw away first elem, cause it's useless one */
         array_shift($array);
+        /* Only happens when preg_split did nothing */
         if (sizeof($array) == 0)
         {
             echo "Error while preg_splitting the report page\n";
@@ -220,7 +221,7 @@ class Etna
                     $json = json_decode(file_get_contents('notes/'.$id), true);
                     if (isset($json[$value['UV']]))
                     {
-                        /* try to check : isset($json[$value['UV']][$value['intitule']]) */
+                        /* we iterate through every project of the uv */
                         foreach ($json[$value['UV']] as $uv)
                         {
                             if ($uv['intitule'] === $value['intitule'])
@@ -229,7 +230,7 @@ class Etna
                                 if ($note != 'NYD' && $note >= 0)
                                 {
                                     $count++;
-                                    $notes[$user] = $note;
+                                    $notes[$user] = array('note' => $note, 'link' => $uv['link']);
                                 }
                             }
                         }
@@ -244,8 +245,8 @@ class Etna
                     $size = sizeof($notes);
                     foreach ($notes as $user => $note)
                     {
-                        $total += $note;
-                        $msg .= sprintf("%-8s => `%d`\n", $user, $note);
+                        $total += $note['note'];
+                        $msg .= sprintf("<%s|%-8s => `%d`>\n", $note['link'], $user, $note['note']);
                     }
                     $average = number_format($total / $count, 2);
                     $msg .= "Average  => `$average`\n";

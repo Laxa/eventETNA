@@ -58,7 +58,10 @@ try
             else
                 $users = array('debug' => $config['refUser']);
             $msg = Etna::getSpecificNotesForUsers($users, $array);
-            Etna::slack($msg, $config);
+            if (!$debug)
+                Etna::slack($msg, $config);
+            else
+                echo $msg;
         }
     }
 
