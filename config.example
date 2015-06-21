@@ -1,6 +1,6 @@
 {
     "refUser":007,
-    "cookie":"cookie here",
+    "cookie":"drop your PHPSESSID cookie here",
     "promo":["promo 1 URL from trombi",
         "promo 2 URL from trombi"
     ],
