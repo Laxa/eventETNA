@@ -24,6 +24,8 @@ try
     /* SCRIPT SETTINGS */
     $config = Etna::getConfigFile('config');
     $debug = isset($config['env']) && $config['env'] === 'debug';
+    if ($debug)
+        echo "Script being run in debug!\n";
     /* !SCRIPT SETTINGS */
 
     if (!(file_exists('notes') && is_dir('notes')))
@@ -46,15 +48,11 @@ try
             $current = Etna::getNotesForUser($config['refUser'], $config, false);
             $old = json_decode(file_get_contents('notes/'.$config['refUser']), true);
         }
-        /* If there is a diff, we need to udpdate our datas to be accurate */
+        /* If there is a diff, we need to update our datas */
         if (($array = Etna::diff($current, $old)) != false)
         {
             if (!$debug)
-            {
-                Etna::updateNotes($config);
-                /* Get all notes for the diff */
-                $users = Etna::getUsersListForPromos($config);
-            }
+                $users = Etna::updateNotes($config);
             else
                 $users = array('debug' => $config['refUser']);
             $msg = Etna::getSpecificNotesForUsers($users, $array);

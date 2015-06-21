@@ -20,38 +20,50 @@ class Etna
 
     public static function updateNotes(&$config, $verbose = false)
     {
+        $users = array();
         foreach ($config['promo'] as $promo)
-            self::getNotesByPromo($promo, $config, $verbose);
+            $users += self::getNotesByPromo($promo, $config, $verbose);
+        return $users;
     }
 
     public static function diff($current, $old)
     {
         $array = array();
 
+        /* $key is UV name and value his data */
         foreach ($current as $key => $value)
         {
             $msg = '';
             if (!isset($old[$key]))
             {
-                $msg .= sprintf("Nouveau module detecte `%s`\n", $key);
-                foreach ($value as $k => $v)
+                $msg .= sprintf("Nouvelle UV detectee `%s`\n", $key);
+                /* $k is project inside UV and $v it's data */
+                foreach ($value['notes'] as $k => $v)
                 {
                     if (isset($v['intitule']))
                         $msg .= sprintf("Nouveau intitule detecte `%s`\n", $v['intitule']);
                     if (isset($v['note']) && $v['note'] != 'NYD')
                         $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
+                    if ($v['validation'] != 'NE')
+                        $msg .= "Validation de l'UV faite\n";
                     $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                 }
             }
             else
             {
-                foreach ($value as $k => $v)
+                /* $k is project inside UV and $v it's data */
+                foreach ($value['notes'] as $k => $v)
                 {
-                    if ($old[$key][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
+                    if ($old[$key]['notes'][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
                     {
                         $msg .= sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
                         $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                     }
+                }
+                if ($old[$key]['validation'] != $current[$key]['validation'])
+                {
+                    $msg .= sprintf("L'UV `%s` viens de se faire valider\n", $key);
+                    $array[] = array('UV' => '', 'intitule' => '', 'msg' => $msg, 'note' => '');
                 }
             }
         }
@@ -91,15 +103,18 @@ class Etna
 
     public static function getNotesByPromo($url, &$config, $verbose = false)
     {
+        $array = array();
         $users = self::getUsers($url, $config);
         foreach ($users as $user => $id)
         {
             if ($verbose)
                 echo "Getting notes for $id:$user...";
             self::getNotesForUser($id, $config);
+            $array[$user] = $id;
             if ($verbose)
                 echo "Done!\n";
         }
+        return $array;
     }
 
     public static function getNotesForUser($id, &$config, $save = true)
@@ -137,12 +152,17 @@ class Etna
         preg_match_all('#<tr[^>]*>(.*?)</tr#s', $uv, $matches);
         $tmp = $matches[1];
         $size = sizeof($tmp);
+        $validation = '';
         for ($i = 0; $i < $size; $i++)
         {
             if (!preg_match_all('#<td[^>]*>(.*?)</td#s', $tmp[$i], $noteRow))
                 continue;
             try
             {
+                /* to check if we have a validation on UV */
+                /* We insert that in the first cell */
+                if ($i === 0 && isset($noteRow[1][5]))
+                    $validation = trim(strip_tags($noteRow[1][5]));
                 $notes[$i]['date'] = trim(strip_tags($noteRow[1][0]));
                 $notes[$i]['intitule'] = trim(strip_tags($noteRow[1][1]));
                 $note = trim($noteRow[1][2]);
@@ -162,7 +182,7 @@ class Etna
                 return false;
             }
         }
-        return $notes;
+        return array('validation' => $validation, 'notes' => $notes);
     }
 
     public static function getUsersListForPromos(&$config)
