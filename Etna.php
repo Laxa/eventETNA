@@ -141,7 +141,6 @@ class Etna
         {
             if (!preg_match_all('#<td[^>]*>(.*?)</td#s', $tmp[$i], $noteRow))
                 continue;
-            /* should never happen, but you never know with euteuna... */
             try
             {
                 $notes[$i]['date'] = trim(strip_tags($noteRow[1][0]));
