@@ -44,7 +44,7 @@ class Etna
                         $msg .= sprintf("Nouveau intitule detecte `%s`\n", $v['intitule']);
                     if (isset($v['note']) && $v['note'] != 'NYD')
                         $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
-                    if ($v['validation'] != 'NE')
+                    if ($value['validation'] != 'NE')
                         $msg .= "Validation de l'UV faite\n";
                     $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                 }
