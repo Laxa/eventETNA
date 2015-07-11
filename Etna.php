@@ -15,7 +15,7 @@ class Etna
 
     public static function setConfigFile($filename, $config)
     {
-        file_put_contents($filename, json_encode($config));
+        file_put_contents($filename, json_encode($config, JSON_PRETTY_PRINT));
     }
 
     public static function updateNotes(&$config, $verbose = false)
