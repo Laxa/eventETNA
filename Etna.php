@@ -41,9 +41,9 @@ class Etna
                 foreach ($value['notes'] as $k => $v)
                 {
                     if (isset($v['intitule']))
-                        $msg .= sprintf("Nouveau intitule detecte `%s`\n", $v['intitule']);
+                        $msg .= sprintf("Nouvel intitule detecte `%s`\n", $v['intitule']);
                     if (isset($v['note']) && $v['note'] != 'NYD')
-                        $msg .= sprintf("Nouvelle note disponible pour `%s`\n", $v['intitule']);
+                        $msg .= sprintf("Nouvelles notes disponible pour `%s`\n", $v['intitule']);
                     if ($value['validation'] != 'NE')
                         $msg .= "Validation de l'UV faite\n";
                     $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
@@ -241,15 +241,16 @@ class Etna
                     if (isset($json[$value['UV']]))
                     {
                         /* we iterate through every project of the uv */
-                        foreach ($json[$value['UV']] as $uv)
+                        foreach ($json[$value['UV']]['notes'] as $projet)
                         {
-                            if ($uv['intitule'] === $value['intitule'])
+                            var_dump($projet);
+                            if ($projet['intitule'] === $value['intitule'])
                             {
-                                $note = $uv['note'];
+                                $note = $projet['note'];
                                 if ($note != 'NYD' && $note >= 0)
                                 {
                                     $count++;
-                                    $notes[$user] = array('note' => $note, 'link' => $uv['link']);
+                                    $notes[$user] = array('note' => $note, 'link' => $projet['link']);
                                 }
                             }
                         }
