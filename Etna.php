@@ -243,11 +243,10 @@ class Etna
                         /* we iterate through every project of the uv */
                         foreach ($json[$value['UV']]['notes'] as $projet)
                         {
-                            var_dump($projet);
                             if ($projet['intitule'] === $value['intitule'])
                             {
                                 $note = $projet['note'];
-                                if ($note != 'NYD' && $note >= 0)
+                                if (is_numeric($note))
                                 {
                                     $count++;
                                     $notes[$user] = array('note' => $note, 'link' => $projet['link']);
