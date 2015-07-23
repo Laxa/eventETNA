@@ -4,6 +4,8 @@ require_once __DIR__.'/Etna.php';
 
 /* CUSTOM ERROR HANDLING */
 set_error_handler('exceptions_error_handler');
+// forcing php CLI to have unlimited time
+set_time_limit(0);
 
 function exceptions_error_handler($severity, $message, $filename, $lineno)
 {
