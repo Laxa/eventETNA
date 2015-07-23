@@ -80,7 +80,7 @@ class Etna
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); // seconds max to make connection with server
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10); // timeout while waiting answer from server
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // timeout while waiting answer from server
         curl_setopt($ch, CURLOPT_COOKIE, $config['cookie']);
 
         $response = curl_exec($ch);
