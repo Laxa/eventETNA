@@ -79,6 +79,8 @@ class Etna
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); // seconds max to make connection with server
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10); // timeout while waiting answer from server
         curl_setopt($ch, CURLOPT_COOKIE, $config['cookie']);
 
         $response = curl_exec($ch);
@@ -90,8 +92,24 @@ class Etna
 
         if ((int)($httpCode / 100) != 2)
         {
-            echo "Getting $url returned a $httpCode, exiting\n";
+            if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut'];
+            else $timeOut = 0;
+            if ($httpCode !== 0 && $timeOut == 0)
+                self::slack("Intranet returned $httpCode, service down.", $config, false);
+            else if ($timeOut == 0)
+            {
+                $errno = curl_error($ch);
+                self::slack("Intranet down : $errno", $config, false);
+            }
+            $config['timeOut'] = $timeOut + 1;
+            self::setConfigFile('config', $config);
             exit(-1);
+        }
+        if (isset($config['timeOut']) && (int)$config['timeOut'] > 0)
+        {
+            self::slack('Intranet is back online, was down for '.$config['timeOut'].' minutes', $config, false);
+            $config['timeOut'] = 0;
+            self::setConfigFile('config', $config);
         }
         if (preg_match('#PHPSESSID=([^;]+)#', $header, $matches))
             $config['cookie'] = $matches[1];
@@ -280,7 +298,7 @@ class Etna
     // (string) $message - message to be passed to Slack
     // (string) $room - room in which to write the message, too
     // (string) $icon - You can set up custom emoji icons to use with each message
-    public static function slack($message, &$config)
+    public static function slack($message, &$config, $save = true)
     {
         /* This is to be sure we avoid transmitting twice the same message */
         if (empty($message) || !strlen($message)) return;
@@ -303,7 +321,8 @@ class Etna
             throw new Exception("Failed to sent message to slack `$result`");
 
         /* message should never be the same, in case of 'error' we don't send last message */
-        $config['lastMessage'] = $message;
+        if ($save)
+            $config['lastMessage'] = $message;
 
         curl_close($ch);
 
