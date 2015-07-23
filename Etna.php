@@ -133,6 +133,7 @@ class Etna
         if (sizeof($array) == 0)
         {
             echo "Error while preg_splitting the report page\n";
+            echo "$userPage\n";
             exit(-1);
         }
         $notes = array();
