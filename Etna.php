@@ -98,6 +98,7 @@ class Etna
                 self::slack("Intranet returned $httpCode, service down.", $config, false);
             else if ($timeOut == 0)
             {
+                if (curl_errno($ch) == 6) exit(-1); // avoid spam about dns lookup
                 $errno = curl_error($ch);
                 self::slack("Intranet down : $errno", $config, false);
             }
