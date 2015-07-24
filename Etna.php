@@ -74,13 +74,12 @@ class Etna
 
     public static function get($url, &$config)
     {
+        $start = microtime(true);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); // seconds max to make connection with server
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // timeout while waiting answer from server
         curl_setopt($ch, CURLOPT_COOKIE, $config['cookie']);
 
         $response = curl_exec($ch);
@@ -90,7 +89,7 @@ class Etna
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
-        if ((int)($httpCode / 100) != 2)
+        if ((int)($httpCode / 100) != 2 || $response === false)
         {
             if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut'];
             else $timeOut = 0;
@@ -98,9 +97,11 @@ class Etna
                 self::slack("Intranet returned $httpCode, service down.", $config, false);
             else if ($timeOut == 0)
             {
-                if (curl_errno($ch) == 6) exit(-1); // avoid spam about dns lookup
-                $errno = curl_error($ch);
-                self::slack("Intranet down : $errno", $config, false);
+                $stop = microtime(true);
+                echo 'Elapsed '.($stop - $start)."\n";
+                $error = curl_error($ch);
+                $errno = curl_errno($ch);
+                self::slack("Intranet down : [$errno]$error", $config, false);
             }
             $config['timeOut'] = $timeOut + 1;
             self::setConfigFile('config', $config);
