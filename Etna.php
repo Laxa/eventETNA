@@ -324,7 +324,11 @@ class Etna
 
         /* message should never be the same, in case of 'error' we don't send last message */
         if ($save)
+        {
             $config['lastMessage'] = $message;
+            if (isset($config['sms']) && $config['sms'] == true)
+            `sms $message`;
+        }
 
         curl_close($ch);
 
