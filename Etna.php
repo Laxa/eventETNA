@@ -286,7 +286,7 @@ class Etna
                     foreach ($notes as $user => $note)
                     {
                         $total += $note['note'];
-                        $msg .= sprintf("<%s|%-8s => `%d`>\n", $note['link'], $user, $note['note']);
+                        $msg .= sprintf("<%s|%-8s -- `%.1f`>\n", $note['link'], $user, $note['note'], 2);
                     }
                     $average = number_format($total / $count, 2);
                     $msg .= "Average  => `$average`\n";
