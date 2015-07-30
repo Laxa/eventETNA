@@ -326,8 +326,8 @@ class Etna
         if ($save)
         {
             $config['lastMessage'] = $message;
-            if (isset($config['sms']) && $config['sms'] == true)
-            `sms $message`;
+            /* if (isset($config['sms']) && $config['sms'] == true) */
+            /* `sms "$message"`; */
         }
 
         curl_close($ch);
