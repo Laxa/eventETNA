@@ -54,15 +54,20 @@ class Etna
                 /* $k is project inside UV and $v it's data */
                 foreach ($value['notes'] as $k => $v)
                 {
-                    if ($old[$key]['notes'][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
+                    if (!isset($old[$key]['notes'][$k]['note']))
                     {
-                        $msg .= sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
+                        $msg = sprintf("Nouvel intitule detecte `%s`\n", $v['intitule']);
+                        $array[] = array('UV' => '', 'intitule' => '', 'msg' => $msg, 'note' => '');
+                    }
+                    else if ($old[$key]['notes'][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
+                    {
+                        $msg = sprintf("Nouvelle note disponible de l'UV `%s` pour `%s`\n", $key, $v['intitule']);
                         $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                     }
                 }
                 if ($old[$key]['validation'] != $current[$key]['validation'])
                 {
-                    $msg .= sprintf("L'UV `%s` viens de se faire valider\n", $key);
+                    $msg = sprintf("L'UV `%s` viens de se faire valider\n", $key);
                     $array[] = array('UV' => '', 'intitule' => '', 'msg' => $msg, 'note' => '');
                 }
             }
