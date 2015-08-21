@@ -57,7 +57,7 @@ class Etna
                     if (!isset($old[$key]['notes'][$k]['note']))
                     {
                         $msg = sprintf("Nouvel intitule detecte `%s`\n", $v['intitule']);
-                        $array[] = array('UV' => '', 'intitule' => '', 'msg' => $msg, 'note' => '');
+                        $array[] = array('UV' => '', 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                     }
                     else if ($old[$key]['notes'][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
                     {
@@ -85,6 +85,7 @@ class Etna
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 110);
         curl_setopt($ch, CURLOPT_COOKIE, $config['cookie']);
 
         $response = curl_exec($ch);
@@ -108,7 +109,7 @@ class Etna
                 $errno = curl_errno($ch);
                 self::slack("Intranet down : [$errno]$error", $config, false);
             }
-            $config['timeOut'] = $timeOut + 1;
+            $config['timeOut'] = $timeOut + 2;
             self::setConfigFile('config', $config);
             exit(-1);
         }
