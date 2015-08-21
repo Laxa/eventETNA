@@ -57,7 +57,7 @@ class Etna
                     if (!isset($old[$key]['notes'][$k]['note']))
                     {
                         $msg = sprintf("Nouvel intitule detecte `%s`\n", $v['intitule']);
-                        $array[] = array('UV' => '', 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
+                        $array[] = array('UV' => $key, 'intitule' => $v['intitule'], 'msg' => $msg, 'note' => $v['note']);
                     }
                     else if ($old[$key]['notes'][$k]['note'] === 'NYD' && $v['note'] != 'NYD')
                     {
