@@ -104,7 +104,7 @@ class Etna
             else if ($timeOut == 0)
             {
                 $stop = microtime(true);
-                echo 'Elapsed '.($stop - $start)."\n";
+                /* echo 'Elapsed '.($stop - $start)."\n"; */
                 $error = curl_error($ch);
                 $errno = curl_errno($ch);
                 self::slack("Intranet down : [$errno]$error", $config, false);
