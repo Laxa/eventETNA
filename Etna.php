@@ -97,37 +97,37 @@ class Etna
 
         if ((int)($httpCode / 100) != 2 || $response === false)
         {
-            if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut'];
-            else $timeOut = 0;
-            if ($httpCode !== 0 && $timeOut == 0)
-                self::slack("Intranet returned $httpCode, service down.", $config, false);
-            else if ($timeOut == 0)
-            {
-                $error = curl_error($ch);
-                $errno = curl_errno($ch);
-                self::slack("Intranet down : [$errno]$error", $config, false);
-            }
-            $config['timeOut'] = $timeOut + 2;
-            self::setConfigFile('config', $config);
+            /* if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut']; */
+            /* else $timeOut = 0; */
+            /* if ($httpCode !== 0 && $timeOut == 0) */
+            /*     self::slack("Intranet returned $httpCode, service down.", $config, false); */
+            /* else if ($timeOut == 0) */
+            /* { */
+            /*     $error = curl_error($ch); */
+            /*     $errno = curl_errno($ch); */
+            /*     self::slack("Intranet down : [$errno]$error", $config, false); */
+            /* } */
+            /* $config['timeOut'] = $timeOut + 2; */
+            /* self::setConfigFile('config', $config); */
             exit(-1);
         }
         else if (preg_match("#Erreur: ([0-9]{3})#", $body, $matches) == 1)
         {
-            if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut'];
-            else $timeOut = 0;
-            $httpCode = $matches[1];
-            if ($timeOut == 0)
-                self::slack("Intranet returned $httpCode, service down.", $config, false);
-            $config['timeOut'] = $timeOut + 2;
-            self::setConfigFile('config', $config);
+            /* if (isset($config['timeOut'])) $timeOut = (int)$config['timeOut']; */
+            /* else $timeOut = 0; */
+            /* $httpCode = $matches[1]; */
+            /* if ($timeOut == 0) */
+            /*     self::slack("Intranet returned $httpCode, service down.", $config, false); */
+            /* $config['timeOut'] = $timeOut + 2; */
+            /* self::setConfigFile('config', $config); */
             exit(-1);
         }
-        if (isset($config['timeOut']) && (int)$config['timeOut'] > 0)
-        {
-            self::slack('Intranet is back online, was down for '.$config['timeOut'].' minutes', $config, false);
-            $config['timeOut'] = 0;
-            self::setConfigFile('config', $config);
-        }
+        /* if (isset($config['timeOut']) && (int)$config['timeOut'] > 0) */
+        /* { */
+        /*     self::slack('Intranet is back online, was down for '.$config['timeOut'].' minutes', $config, false); */
+        /*     $config['timeOut'] = 0; */
+        /*     self::setConfigFile('config', $config); */
+        /* } */
         if (preg_match('#PHPSESSID=([^;]+)#', $header, $matches))
             $config['cookie'] = $matches[1];
 
